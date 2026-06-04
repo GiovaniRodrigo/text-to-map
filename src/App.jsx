@@ -4,6 +4,7 @@ import ControlPanel from './components/ControlPanel';
 import Canvas from './components/Canvas';
 import DetailsPanel from './components/DetailsPanel';
 import SegmentEditor from './components/SegmentEditor';
+import RelationshipEditor from './components/RelationshipEditor';
 import { parseMermaid } from './utils/mermaid';
 import { parseMarkdown } from './utils/markdown';
 import { getLayoutedElements } from './utils/layout';
@@ -22,6 +23,16 @@ export default function App() {
   const [wizardStep, setWizardStep] = useState(null); // null, 'segments', 'relationships', 'map'
   const [segments, setSegments] = useState([]);
   const [relationships, setRelationships] = useState([]);
+
+  // Cascade deletion of relationships when a segment is deleted
+  const handleSegmentsChange = (newSegments) => {
+    setSegments(newSegments);
+    const validIds = new Set(newSegments.map((s) => s.id));
+    const filteredRels = relationships.filter(
+      (rel) => validIds.has(rel.sourceSegmentId) && validIds.has(rel.targetSegmentId)
+    );
+    setRelationships(filteredRels);
+  };
 
   // Recalculate node positions immediately when layout changes
   useEffect(() => {
@@ -185,29 +196,18 @@ export default function App() {
           {wizardStep === 'segments' ? (
             <SegmentEditor
               segments={segments}
-              onSegmentsChange={setSegments}
+              onSegmentsChange={handleSegmentsChange}
               onNext={() => setWizardStep('relationships')}
               onBack={() => setWizardStep(null)}
             />
           ) : wizardStep === 'relationships' ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-4">
-              <h2 className="text-lg font-bold text-violet-300">Step 2: Review Relationships (Placeholder)</h2>
-              <p className="text-xs text-slate-400">Manage and edit connections between segments in the next phase.</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setWizardStep('segments')}
-                  className="px-4 py-2 border border-white/10 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={handleGenerateMapFromWizard}
-                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-semibold"
-                >
-                  Generate Map
-                </button>
-              </div>
-            </div>
+            <RelationshipEditor
+              segments={segments}
+              relationships={relationships}
+              onRelationshipsChange={setRelationships}
+              onNext={handleGenerateMapFromWizard}
+              onBack={() => setWizardStep('segments')}
+            />
           ) : (
             <ReactFlowProvider>
               <Canvas

@@ -70,9 +70,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T011 [P] [US2] Create the `RelationshipEditor` component in `src/components/RelationshipEditor.jsx` to display and edit relationships in a table/list view
-- [ ] T012 [US2] Update `src/App.jsx` with handlers to add, delete, and edit relationships, ensuring deleting a segment automatically cascades and deletes related relationships
-- [ ] T013 [US2] Integrate `RelationshipEditor` into `src/App.jsx` to render when wizard step is `'relationships'`
+- [x] T011 [P] [US2] Create the `RelationshipEditor` component in `src/components/RelationshipEditor.jsx` to display and edit relationships in a table/list view
+- [x] T012 [US2] Update `src/App.jsx` with handlers to add, delete, and edit relationships, ensuring deleting a segment automatically cascades and deletes related relationships
+- [x] T013 [US2] Integrate `RelationshipEditor` into `src/App.jsx` to render when wizard step is `'relationships'`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
