@@ -20,8 +20,8 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project folders and verify spec workspace files in `specs/003-clean-segment-text/`
-- [ ] T002 [P] Verify dev server dependencies and scripts in `package.json`
+- [x] T001 Create project folders and verify spec workspace files in `specs/003-clean-segment-text/`
+- [x] T002 [P] Verify dev server dependencies and scripts in `package.json`
 
 ---
 
