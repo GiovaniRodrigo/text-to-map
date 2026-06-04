@@ -49,7 +49,7 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T006 [P] [US1] Create unit tests for local fallback parser and merge/delete helpers in `tests/unit/segmentation.test.js`
+- [x] T006 [P] [US1] Create unit tests for local fallback parser and merge/delete helpers in `tests/unit/segmentation.test.js`
 
 ### Implementation for User Story 1
 
