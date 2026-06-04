@@ -87,7 +87,7 @@ export const extractMapWithAI = async (text) => {
     return { nodes, edges };
   } catch (err) {
     console.error('Gemini API extraction failed:', err);
-    throw new Error(`AI Extraction failed: ${err.message || 'Check connection and API key.'}`);
+    throw new Error(`AI Extraction failed: ${err.message || 'Check connection and API key.'}`, { cause: err });
   }
 };
 
@@ -111,7 +111,7 @@ const generateMockGraph = async (text) => {
   const edges = [];
   let prevId = null;
 
-  sentences.forEach((sentence, idx) => {
+  sentences.forEach((sentence) => {
     // Generate simple concepts based on sentence structures
     const words = sentence.split(/\s+/).filter(w => w.length > 3);
     if (words.length === 0) return;

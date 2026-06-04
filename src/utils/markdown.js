@@ -24,7 +24,7 @@ export const parseMarkdown = (text) => {
     const rawContent = match[2].trim();
 
     // Remove bold (*, **), italic (*, _), code (`) or strike (~~) markdown symbols
-    const label = rawContent.replace(/[\*_`~]/g, '');
+    const label = rawContent.replace(/[*_`~]/g, '');
 
     // Calculate indentation depth (tabs count as 4 spaces)
     let depth = 0;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { validateFile, readFileContent } from '../utils/fileUpload';
 
 export default function ControlPanel({

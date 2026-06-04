@@ -1,3 +1,4 @@
+/* global global */
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { validateFile, readFileContent } from '../src/utils/fileUpload';
 

@@ -1,13 +1,13 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 
 function CustomNode({ data, selected }) {
   const { label, category } = data;
 
   // Dynamic visual styling and categorizations
-  let colorClass = '';
-  let categoryLabel = 'Concept';
-  let icon = '💡';
+  let colorClass;
+  let categoryLabel;
+  let icon;
 
   switch (category) {
     case 'action':

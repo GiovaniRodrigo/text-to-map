@@ -49,7 +49,7 @@ export const parseSegmentsLocally = (text) => {
     }
 
     // Clean title from punctuation for clean display
-    title = title.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').trim();
+    title = title.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '').trim();
     if (title.length > 0) {
       title = title.charAt(0).toUpperCase() + title.slice(1);
     } else {

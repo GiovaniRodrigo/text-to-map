@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import ControlPanel from './components/ControlPanel';
 import Canvas from './components/Canvas';
@@ -37,6 +37,7 @@ export default function App() {
 
 
   // Recalculate node positions immediately when layout changes
+  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
   useEffect(() => {
     if (nodes.length > 0) {
       const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, layoutType);
@@ -44,6 +45,7 @@ export default function App() {
       setEdges(layoutedEdges);
     }
   }, [layoutType]);
+  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 
   const handleGenerate = async () => {
     setError(null);

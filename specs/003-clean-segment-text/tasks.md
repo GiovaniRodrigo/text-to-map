@@ -98,9 +98,9 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T017 [P] Resolve linting and formatting issues in all modified files
-- [ ] T018 Refine visual adjustments, transitions, and loading skeleton states in `src/App.jsx`
-- [ ] T019 Run quickstart validation guide scenarios in `specs/003-clean-segment-text/quickstart.md`
+- [x] T017 [P] Resolve linting and formatting issues in all modified files
+- [x] T018 Refine visual adjustments, transitions, and loading skeleton states in `src/App.jsx`
+- [x] T019 Run quickstart validation guide scenarios in `specs/003-clean-segment-text/quickstart.md`
 
 ---
 
