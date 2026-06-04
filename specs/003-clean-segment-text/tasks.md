@@ -53,10 +53,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Create the `SegmentEditor` component in `src/components/SegmentEditor.jsx` to render editable segment cards
-- [ ] T008 [US1] Update `src/App.jsx` state to support wizard steps, parsing input, editing segments, deleting segments, and merging segments
-- [ ] T009 [US1] Integrate `SegmentEditor` into `src/App.jsx` to render when wizard step is `'segments'`
-- [ ] T010 [US1] Add progress navigation indicator at the top of the interface in `src/App.jsx`
+- [x] T007 [P] [US1] Create the `SegmentEditor` component in `src/components/SegmentEditor.jsx` to render editable segment cards
+- [x] T008 [US1] Update `src/App.jsx` state to support wizard steps, parsing input, editing segments, deleting segments, and merging segments
+- [x] T009 [US1] Integrate `SegmentEditor` into `src/App.jsx` to render when wizard step is `'segments'`
+- [x] T010 [US1] Add progress navigation indicator at the top of the interface in `src/App.jsx`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
