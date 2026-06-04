@@ -10,6 +10,7 @@ import { parseMarkdown } from './utils/markdown';
 import { getLayoutedElements } from './utils/layout';
 import { segmentTextWithAI } from './services/gemini';
 
+
 export default function App() {
   const [rawInput, setRawInput] = useState('');
   const [nodes, setNodes] = useState([]);
@@ -33,6 +34,7 @@ export default function App() {
     );
     setRelationships(filteredRels);
   };
+
 
   // Recalculate node positions immediately when layout changes
   useEffect(() => {
@@ -143,6 +145,7 @@ export default function App() {
     setWizardStep('map');
   };
 
+
   const handleClear = () => {
     setRawInput('');
     setNodes([]);
@@ -153,6 +156,7 @@ export default function App() {
     setSegments([]);
     setRelationships([]);
   };
+
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
@@ -231,4 +235,5 @@ export default function App() {
       )}
     </div>
   );
+
 }

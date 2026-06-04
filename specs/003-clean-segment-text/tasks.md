@@ -86,9 +86,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Update `src/App.jsx` to map the finalized segments and relationships into React Flow nodes and edges, applying Dagre/D3 layout
-- [ ] T015 [US3] Update `src/components/ControlPanel.jsx` to show wizard navigation controls, back buttons, and analyze triggers
-- [ ] T016 [US3] Add category-based node decoration borders and styling in `src/components/CustomNode.jsx`
+- [x] T014 [US3] Update `src/App.jsx` to map the finalized segments and relationships into React Flow nodes and edges, applying Dagre/D3 layout
+- [x] T015 [US3] Update `src/components/ControlPanel.jsx` to show wizard navigation controls, back buttons, and analyze triggers
+- [x] T016 [US3] Add category-based node decoration borders and styling in `src/components/CustomNode.jsx`
 
 **Checkpoint**: All user stories should now be independently functional
 

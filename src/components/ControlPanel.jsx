@@ -11,8 +11,15 @@ export default function ControlPanel({
   error,
   onClear,
   onError,
+  wizardStep,
+  onEditStructure,
 }) {
   const [isDragging, setIsDragging] = useState(false);
+
+  const trimmedInput = rawInput.trim();
+  const isMermaid = /^\s*(flowchart|graph)\b/i.test(trimmedInput) || trimmedInput.includes('-->') || trimmedInput.includes('-.->');
+  const isMarkdown = /^\s*[-*+]\s+/m.test(trimmedInput) || /^\s*\d+\.\s+/m.test(trimmedInput);
+  const isRawText = trimmedInput.length > 0 && !isMermaid && !isMarkdown;
 
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -25,6 +32,7 @@ export default function ControlPanel({
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Only set to false if leaving the main container (to handle child element hover bugs)
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
@@ -54,7 +62,7 @@ export default function ControlPanel({
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       await processUploadedFile(file);
-      e.target.value = '';
+      e.target.value = ''; // Reset to allow re-uploading the same file
     }
   };
 
@@ -122,7 +130,9 @@ flowchart TD
 
 Or Markdown:
 - Main Topic
-  - Sub-topic`}
+  - Sub-topic
+
+Or raw paragraphs of text for AI generation...`}
             className="flex-1 w-full bg-black/40 border border-white/5 rounded-xl p-4 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 resize-none transition-all"
           />
 
@@ -135,6 +145,7 @@ Or Markdown:
           )}
         </div>
       </div>
+
 
       {/* Settings / Controls */}
       <div className="space-y-4">
@@ -173,6 +184,17 @@ Or Markdown:
           </div>
         )}
 
+        {/* Edit Structure Wizard button */}
+        {wizardStep === 'map' && (
+          <button
+            onClick={onEditStructure}
+            className="w-full bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/30 text-violet-300 font-bold text-xs py-3 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 mb-2"
+          >
+            <span>✏️</span>
+            <span>Edit Structure</span>
+          </button>
+        )}
+
         {/* Action Buttons */}
         <div className="flex gap-2">
           <button
@@ -192,12 +214,12 @@ Or Markdown:
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                <span>Extracting...</span>
+                <span>{isRawText ? 'Segmenting...' : 'Extracting...'}</span>
               </>
             ) : (
               <>
                 <span>✨</span>
-                <span>Generate Map</span>
+                <span>{isRawText ? 'Analyze & Segment' : 'Generate Map'}</span>
               </>
             )}
           </button>
