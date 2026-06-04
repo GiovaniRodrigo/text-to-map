@@ -31,9 +31,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Create the local fallback segment parser utility in `src/utils/segmentParser.js`
-- [ ] T004 [P] Add the `segmentTextWithAI` API function in `src/services/gemini.js` to call the Gemini API with structured JSON output schema
-- [ ] T005 [P] Define Tailwind and custom CSS glassmorphism styles and border colors for categories in `src/index.css`
+- [x] T003 Create the local fallback segment parser utility in `src/utils/segmentParser.js`
+- [x] T004 [P] Add the `segmentTextWithAI` API function in `src/services/gemini.js` to call the Gemini API with structured JSON output schema
+- [x] T005 [P] Define Tailwind and custom CSS glassmorphism styles and border colors for categories in `src/index.css`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
