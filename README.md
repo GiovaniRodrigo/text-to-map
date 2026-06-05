@@ -1,16 +1,41 @@
-# React + Vite
+# TextMap Studio 🎨
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive single-page React web application that transforms Mermaid flowchart configurations, Markdown outlines, or raw unstructured text (via Gemini AI) into visual, interactive concept maps powered by React Flow.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Format Routing**: Automatically parses structured Mermaid code or Markdown hierarchy outlines locally, falling back to Gemini-powered semantic parsing for raw text.
+- **Interactive Canvas**: Pan, zoom, drag nodes, and explore layouts (Hierarchical Top-Down, Hierarchical Left-to-Right, or Radial Mind Map).
+- **Edit Wizard Flow**: A 3-step wizard flow allowing users to clean, segment, and relate concepts before final canvas rendering.
+- **Collapsible Inspector Panel**: Dedicated right-hand panel for exploring node descriptions and local context details.
+- **Site-Wide Map Heuristics**: Automatic validation checks evaluating map quality and structural health in real time.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Map Heuristics Engine ⚠️
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To ensure concept maps are readable, logical, and high quality, TextMap Studio runs client-side graph heuristics in a debounced background loop:
+
+1. **Orphan Node Detection**: Flags any nodes that are completely disconnected from the rest of the map.
+2. **Self-Loop Check**: Prevents nodes from having redundant relationships linking directly back to themselves.
+3. **Circular Cycles Check**: Uses directed cycle detection (3-coloring DFS) to flag circular dependency loops.
+4. **Category Alignment Check**: Validates that nodes marked as `Warning` or `Action` contain matching lexical cues in their label/description (e.g., action verbs or failure/not indicators).
+
+Clicking on any validation issue in the heuristics panel focuses and temporarily pulses the affected element on the canvas.
+
+---
+
+## Development & Testing
+
+### Run locally
+```bash
+npm run dev
+```
+
+### Run tests
+```bash
+npm run test
+```
+
