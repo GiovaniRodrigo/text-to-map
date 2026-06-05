@@ -148,3 +148,41 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Pulsing highlight for validated nodes and edges */
+@keyframes nodePulseHighlight {
+  0% {
+    box-shadow: 0 0 0 0px rgba(167, 139, 250, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(167, 139, 250, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(167, 139, 250, 0);
+  }
+}
+
+.pulse-highlight-node {
+  animation: nodePulseHighlight 1.5s infinite ease-in-out !important;
+  border: 2px solid #a78bfa !important;
+}
+
+@keyframes edgePulseHighlight {
+  0% {
+    stroke: #a78bfa !important;
+    stroke-width: 5px !important;
+  }
+  50% {
+    stroke: rgba(255, 255, 255, 0.2) !important;
+    stroke-width: 2px !important;
+  }
+  100% {
+    stroke: #a78bfa !important;
+    stroke-width: 5px !important;
+  }
+}
+
+.pulse-highlight-edge path.react-flow__edge-path {
+  animation: edgePulseHighlight 1.5s infinite ease-in-out !important;
+}
+
+

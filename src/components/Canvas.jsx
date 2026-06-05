@@ -19,6 +19,7 @@ export default function Canvas({
   onNodeSelect,
   onPaneSelect,
   selectedNodeId,
+  highlightedElementIds,
 }) {
   const reactFlowInstance = useReactFlow();
 
@@ -31,31 +32,62 @@ export default function Canvas({
       return () => clearTimeout(timer);
     }
   }, [nodes.length, reactFlowInstance]);
+
+  // Viewport focusing when element is highlighted
+  useEffect(() => {
+    if (highlightedElementIds && highlightedElementIds.size > 0 && reactFlowInstance) {
+      const firstId = Array.from(highlightedElementIds)[0];
+      const targetNode = nodes.find((n) => n.id === firstId);
+      if (targetNode && typeof targetNode.position?.x === 'number') {
+        const { x, y } = targetNode.position;
+        reactFlowInstance.setCenter(x + 100, y + 50, { zoom: 1.1, duration: 800 });
+      } else {
+        const targetEdge = edges.find((e) => e.id === firstId);
+        if (targetEdge) {
+          const sourceNode = nodes.find((n) => n.id === targetEdge.source);
+          if (sourceNode && typeof sourceNode.position?.x === 'number') {
+            const { x, y } = sourceNode.position;
+            reactFlowInstance.setCenter(x + 100, y + 50, { zoom: 1.1, duration: 800 });
+          }
+        }
+      }
+    }
+  }, [highlightedElementIds, nodes, edges, reactFlowInstance]);
+
   const customNodes = useMemo(() => {
-    return nodes.map((node) => ({
-      ...node,
-      type: 'customNode',
-      selected: node.id === selectedNodeId,
-    }));
-  }, [nodes, selectedNodeId]);
+    return nodes.map((node) => {
+      const isHighlighted = highlightedElementIds?.has(node.id);
+      return {
+        ...node,
+        type: 'customNode',
+        selected: node.id === selectedNodeId,
+        className: `${node.className || ''} ${isHighlighted ? 'pulse-highlight-node' : ''}`.trim(),
+      };
+    });
+  }, [nodes, selectedNodeId, highlightedElementIds]);
 
   const customEdges = useMemo(() => {
-    return edges.map((edge) => ({
-      ...edge,
-      type: 'smoothstep',
-      animated: edge.id.includes('animated') || edge.selected,
-      style: {
-        stroke: edge.id === selectedNodeId ? '#8b5cf6' : 'rgba(255, 255, 255, 0.15)',
-        strokeWidth: 2,
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 16,
-        height: 16,
-        color: '#64748b',
-      },
-    }));
-  }, [edges, selectedNodeId]);
+    return edges.map((edge) => {
+      const isHighlighted = highlightedElementIds?.has(edge.id);
+      return {
+        ...edge,
+        type: 'smoothstep',
+        className: `${edge.className || ''} ${isHighlighted ? 'pulse-highlight-edge' : ''}`.trim(),
+        animated: edge.id.includes('animated') || edge.selected,
+        style: {
+          stroke: edge.id === selectedNodeId ? '#8b5cf6' : 'rgba(255, 255, 255, 0.15)',
+          strokeWidth: 2,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 16,
+          height: 16,
+          color: '#64748b',
+        },
+      };
+    });
+  }, [edges, selectedNodeId, highlightedElementIds]);
+
 
   return (
     <div className="w-full h-full relative bg-[#0f0f13] overflow-hidden rounded-2xl border border-white/5 shadow-2xl">

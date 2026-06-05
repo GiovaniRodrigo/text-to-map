@@ -1,10 +1,18 @@
+import HeuristicsPanel from './HeuristicsPanel';
+
 export default function DetailsPanel({
   selectedNode,
   edges,
   nodes,
   onClose,
+  isHeuristicsOpen,
+  activeTab,
+  onTabChange,
+  violations,
+  onHighlightElement,
 }) {
-  const isOpen = !!selectedNode;
+  const isOpen = !!selectedNode || isHeuristicsOpen;
+
 
   // Determine connected nodes
   const connectedEdges = selectedNode
@@ -67,11 +75,13 @@ export default function DetailsPanel({
     >
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-white/5">
-        <h3 className="font-bold text-lg text-slate-100">Node Details</h3>
+        <h3 className="font-bold text-lg text-slate-100">
+          {activeTab === 'heuristics' ? 'Map Heuristics' : 'Node Details'}
+        </h3>
         <button
           onClick={onClose}
           className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-slate-200 transition-colors"
-          aria-label="Close details"
+          aria-label="Close panel"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -79,8 +89,38 @@ export default function DetailsPanel({
         </button>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-white/5 bg-black/20">
+        <button
+          onClick={() => onTabChange('details')}
+          disabled={!selectedNode}
+          className={`flex-1 py-3 text-xs font-bold tracking-wide uppercase border-b-2 text-center transition-all ${
+            activeTab === 'details'
+              ? 'border-violet-500 text-violet-400 font-semibold'
+              : 'border-transparent text-slate-500 hover:text-slate-300'
+          } ${!selectedNode ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+        >
+          Details
+        </button>
+        <button
+          onClick={() => onTabChange('heuristics')}
+          className={`flex-1 py-3 text-xs font-bold tracking-wide uppercase border-b-2 text-center cursor-pointer transition-all ${
+            activeTab === 'heuristics'
+              ? 'border-violet-500 text-violet-400 font-semibold'
+              : 'border-transparent text-slate-500 hover:text-slate-300'
+          }`}
+        >
+          Heuristics ({violations ? violations.length : 0})
+        </button>
+      </div>
+
       {/* Content */}
-      {selectedNode ? (
+      {activeTab === 'heuristics' ? (
+        <HeuristicsPanel
+          violations={violations}
+          onHighlightElement={onHighlightElement}
+        />
+      ) : selectedNode ? (
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Category Badge & Node Title */}
           <div>
@@ -159,4 +199,5 @@ export default function DetailsPanel({
       )}
     </div>
   );
+
 }

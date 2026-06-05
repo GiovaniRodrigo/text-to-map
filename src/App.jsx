@@ -5,10 +5,14 @@ import Canvas from './components/Canvas';
 import DetailsPanel from './components/DetailsPanel';
 import SegmentEditor from './components/SegmentEditor';
 import RelationshipEditor from './components/RelationshipEditor';
+import HeuristicsBadge from './components/HeuristicsBadge';
 import { parseMermaid } from './utils/mermaid';
+
 import { parseMarkdown } from './utils/markdown';
 import { getLayoutedElements } from './utils/layout';
 import { segmentTextWithAI } from './services/gemini';
+import { validateMap } from './utils/heuristics';
+
 
 
 export default function App() {
@@ -24,6 +28,13 @@ export default function App() {
   const [wizardStep, setWizardStep] = useState(null); // null, 'segments', 'relationships', 'map'
   const [segments, setSegments] = useState([]);
   const [relationships, setRelationships] = useState([]);
+
+  // Heuristics States
+  const [heuristicViolations, setHeuristicViolations] = useState([]);
+  const [highlightedElementIds, setHighlightedElementIds] = useState(new Set());
+  const [isHeuristicsOpen, setIsHeuristicsOpen] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState('details'); // 'details' or 'heuristics'
+
 
   // Cascade deletion of relationships when a segment is deleted
   const handleSegmentsChange = (newSegments) => {
@@ -46,6 +57,53 @@ export default function App() {
     }
   }, [layoutType]);
   /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+
+  // Real-time debounced heuristics validation
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      let activeNodes;
+      let activeEdges;
+
+      if (wizardStep === 'segments' || wizardStep === 'relationships') {
+        activeNodes = segments.map((seg) => ({
+          id: seg.id,
+          data: {
+            label: seg.title,
+            category: seg.category,
+            description: seg.content,
+          },
+        }));
+        activeEdges = relationships.map((rel) => ({
+          id: rel.id || `e-${rel.sourceSegmentId}-${rel.targetSegmentId}`,
+          source: rel.sourceSegmentId,
+          target: rel.targetSegmentId,
+          label: rel.label,
+        }));
+      } else {
+        activeNodes = nodes;
+        activeEdges = edges;
+      }
+
+      const violations = validateMap(activeNodes, activeEdges);
+      setHeuristicViolations(violations);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [nodes, edges, segments, relationships, wizardStep]);
+
+
+  // Highlight elements and clear after 3 seconds
+  const handleHighlightElement = (targetIds) => {
+    setHighlightedElementIds(new Set(targetIds));
+    setTimeout(() => {
+      setHighlightedElementIds((prev) => {
+        const next = new Set(prev);
+        targetIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    }, 3000);
+  };
+
 
   const handleGenerate = async () => {
     setError(null);
@@ -219,22 +277,42 @@ export default function App() {
               <Canvas
                 nodes={nodes}
                 edges={edges}
-                onNodeSelect={setSelectedNodeId}
+                onNodeSelect={(nodeId) => {
+                  setSelectedNodeId(nodeId);
+                  setRightPanelTab('details');
+                }}
                 onPaneSelect={() => setSelectedNodeId(null)}
                 selectedNodeId={selectedNodeId}
+                highlightedElementIds={highlightedElementIds}
               />
             </ReactFlowProvider>
           )}
         </div>
       </div>
-      {wizardStep !== 'segments' && wizardStep !== 'relationships' && (
-        <DetailsPanel
-          selectedNode={selectedNode}
-          edges={edges}
-          nodes={nodes}
-          onClose={() => setSelectedNodeId(null)}
+      {(nodes.length > 0 || segments.length > 0) && (
+        <HeuristicsBadge
+          violationsCount={heuristicViolations.length}
+          isOpen={isHeuristicsOpen && rightPanelTab === 'heuristics'}
+          onClick={() => {
+            setIsHeuristicsOpen(true);
+            setRightPanelTab('heuristics');
+          }}
         />
       )}
+      <DetailsPanel
+        selectedNode={selectedNode}
+        edges={edges}
+        nodes={nodes}
+        onClose={() => {
+          setSelectedNodeId(null);
+          setIsHeuristicsOpen(false);
+        }}
+        isHeuristicsOpen={isHeuristicsOpen}
+        activeTab={rightPanelTab}
+        onTabChange={setRightPanelTab}
+        violations={heuristicViolations}
+        onHighlightElement={handleHighlightElement}
+      />
     </div>
   );
 
