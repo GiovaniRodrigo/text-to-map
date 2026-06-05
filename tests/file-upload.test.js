@@ -1,4 +1,3 @@
-/* global global */
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { validateFile, readFileContent } from '../src/utils/fileUpload';
 
@@ -29,13 +28,13 @@ beforeAll(() => {
 
 describe('File Validation and Reading Utilities', () => {
   describe('validateFile', () => {
-    it('should validate plain text files under 100KB', () => {
+    it('should validate plain text files under 500KB', () => {
       const file = new File(['small content'], 'notes.txt', { type: 'text/plain' });
       const result = validateFile(file);
       expect(result.valid).toBe(true);
     });
 
-    it('should validate markdown files under 100KB', () => {
+    it('should validate markdown files under 500KB', () => {
       const file = new File(['# Heading'], 'outline.md', { type: 'text/markdown' });
       const result = validateFile(file);
       expect(result.valid).toBe(true);
@@ -47,12 +46,12 @@ describe('File Validation and Reading Utilities', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('should reject files exceeding 100KB', () => {
-      const bigContent = 'a'.repeat(101 * 1024);
+    it('should reject files exceeding 500KB', () => {
+      const bigContent = 'a'.repeat(501 * 1024);
       const file = new File([bigContent], 'large.txt', { type: 'text/plain' });
       const result = validateFile(file);
       expect(result.valid).toBe(false);
-      expect(result.error).toBe('File exceeds the maximum limit of 100KB.');
+      expect(result.error).toBe('File exceeds the maximum limit of 500KB.');
     });
 
     it('should reject non-text files (e.g., images)', () => {

@@ -140,7 +140,7 @@ Or raw paragraphs of text for AI generation...`}
             <div className="absolute inset-0 bg-[#0b0b0e]/90 backdrop-blur-md border border-dashed border-violet-500/50 rounded-xl flex flex-col items-center justify-center space-y-2 pointer-events-none transition-all duration-200 z-50">
               <span className="text-3xl animate-bounce">📥</span>
               <p className="text-xs font-bold text-violet-400">Drop your file here...</p>
-              <p className="text-[9px] text-slate-500">Plain text files up to 100KB</p>
+              <p className="text-[9px] text-slate-500">Plain text files up to 500KB</p>
             </div>
           )}
         </div>

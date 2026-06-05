@@ -6,12 +6,12 @@
  * @returns {{ valid: boolean, error?: string }} - Result of validation.
  */
 export function validateFile(file) {
-  const MAX_SIZE = 100 * 1024; // 100KB in bytes
+  const MAX_SIZE = 500 * 1024; // 500KB in bytes
 
   if (file.size > MAX_SIZE) {
     return {
       valid: false,
-      error: 'File exceeds the maximum limit of 100KB.',
+      error: 'File exceeds the maximum limit of 500KB.',
     };
   }
 
