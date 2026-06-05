@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GeminiAPIMockResponse",
+  "type": "OBJECT",
+  "properties": {
+    "nodes": {
+      "type": "ARRAY",
+      "items": {
+        "type": "OBJECT",
+        "properties": {
+          "id": {
+            "type": "STRING",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "label": {
+            "type": "STRING"
+          },
+          "category": {
+            "type": "STRING",
+            "enum": ["concept", "action", "warning", "question"]
+          },
+          "description": {
+            "type": "STRING"
+          }
+        },
+        "required": ["id", "label", "category", "description"]
+      }
+    },
+    "edges": {
+      "type": "ARRAY",
+      "items": {
+        "type": "OBJECT",
+        "properties": {
+          "source": {
+            "type": "STRING"
+          },
+          "target": {
+            "type": "STRING"
+          },
+          "label": {
+            "type": "STRING"
+          }
+        },
+        "required": ["source", "target", "label"]
+      }
+    }
+  },
+  "required": ["nodes", "edges"]
+}

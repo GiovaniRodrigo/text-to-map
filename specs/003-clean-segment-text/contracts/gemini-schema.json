@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GeminiSegmentationSchema",
+  "type": "object",
+  "properties": {
+    "segments": {
+      "type": "array",
+      "description": "List of semantic segments extracted from the text.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique kebab-case ID matching the segment."
+          },
+          "title": {
+            "type": "string",
+            "description": "Concise title for the segment."
+          },
+          "content": {
+            "type": "string",
+            "description": "Summarized content of the segment."
+          },
+          "category": {
+            "type": "string",
+            "enum": ["concept", "action", "warning", "question"],
+            "description": "Visual decoration category."
+          }
+        },
+        "required": ["id", "title", "content", "category"]
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "description": "List of semantic connections between the segments.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "ID of the source segment."
+          },
+          "target": {
+            "type": "string",
+            "description": "ID of the target segment."
+          },
+          "label": {
+            "type": "string",
+            "description": "Verb/relationship description (e.g. leads to, triggers, requires)."
+          }
+        },
+        "required": ["source", "target", "label"]
+      }
+    }
+  },
+  "required": ["segments", "relationships"]
+}

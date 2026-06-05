@@ -1,0 +1,319 @@
+import { useState, useEffect } from 'react';
+import { ReactFlowProvider } from 'reactflow';
+import ControlPanel from './components/ControlPanel';
+import Canvas from './components/Canvas';
+import DetailsPanel from './components/DetailsPanel';
+import SegmentEditor from './components/SegmentEditor';
+import RelationshipEditor from './components/RelationshipEditor';
+import HeuristicsBadge from './components/HeuristicsBadge';
+import { parseMermaid } from './utils/mermaid';
+
+import { parseMarkdown } from './utils/markdown';
+import { getLayoutedElements } from './utils/layout';
+import { segmentTextWithAI } from './services/gemini';
+import { validateMap } from './utils/heuristics';
+
+
+
+export default function App() {
+  const [rawInput, setRawInput] = useState('');
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+  const [layoutType, setLayoutType] = useState('hierarchical-td');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
+
+  // Wizard States
+  const [wizardStep, setWizardStep] = useState(null); // null, 'segments', 'relationships', 'map'
+  const [segments, setSegments] = useState([]);
+  const [relationships, setRelationships] = useState([]);
+
+  // Heuristics States
+  const [heuristicViolations, setHeuristicViolations] = useState([]);
+  const [highlightedElementIds, setHighlightedElementIds] = useState(new Set());
+  const [isHeuristicsOpen, setIsHeuristicsOpen] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState('details'); // 'details' or 'heuristics'
+
+
+  // Cascade deletion of relationships when a segment is deleted
+  const handleSegmentsChange = (newSegments) => {
+    setSegments(newSegments);
+    const validIds = new Set(newSegments.map((s) => s.id));
+    const filteredRels = relationships.filter(
+      (rel) => validIds.has(rel.sourceSegmentId) && validIds.has(rel.targetSegmentId)
+    );
+    setRelationships(filteredRels);
+  };
+
+
+  // Recalculate node positions immediately when layout changes
+  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+  useEffect(() => {
+    if (nodes.length > 0) {
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, layoutType);
+      setNodes(layoutedNodes);
+      setEdges(layoutedEdges);
+    }
+  }, [layoutType]);
+  /* eslint-enable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+
+  // Real-time debounced heuristics validation
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      let activeNodes;
+      let activeEdges;
+
+      if (wizardStep === 'segments' || wizardStep === 'relationships') {
+        activeNodes = segments.map((seg) => ({
+          id: seg.id,
+          data: {
+            label: seg.title,
+            category: seg.category,
+            description: seg.content,
+          },
+        }));
+        activeEdges = relationships.map((rel) => ({
+          id: rel.id || `e-${rel.sourceSegmentId}-${rel.targetSegmentId}`,
+          source: rel.sourceSegmentId,
+          target: rel.targetSegmentId,
+          label: rel.label,
+        }));
+      } else {
+        activeNodes = nodes;
+        activeEdges = edges;
+      }
+
+      const violations = validateMap(activeNodes, activeEdges);
+      setHeuristicViolations(violations);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [nodes, edges, segments, relationships, wizardStep]);
+
+
+  // Highlight elements and clear after 3 seconds
+  const handleHighlightElement = (targetIds) => {
+    setHighlightedElementIds(new Set(targetIds));
+    setTimeout(() => {
+      setHighlightedElementIds((prev) => {
+        const next = new Set(prev);
+        targetIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    }, 3000);
+  };
+
+
+  const handleGenerate = async () => {
+    setError(null);
+    setSelectedNodeId(null);
+    const trimmedInput = rawInput.trim();
+
+    if (!trimmedInput) return;
+
+    // Detect input format structure
+    const isMermaid = /^\s*(flowchart|graph)\b/i.test(trimmedInput) || trimmedInput.includes('-->') || trimmedInput.includes('-.->');
+    const isMarkdown = /^\s*[-*+]\s+/m.test(trimmedInput) || /^\s*\d+\.\s+/m.test(trimmedInput);
+
+    // Route raw/unstructured text to Wizard Flow
+    if (!isMermaid && !isMarkdown) {
+      setIsLoading(true);
+      try {
+        const result = await segmentTextWithAI(trimmedInput);
+        if (result.segments.length === 0) {
+          throw new Error('AI was unable to extract any conceptual segments. Please add more detail to the input.');
+        }
+        setSegments(result.segments);
+        setRelationships(result.relationships);
+        setWizardStep('segments');
+      } catch (err) {
+        console.error(err);
+        setError({ message: err.message || 'An unexpected error occurred during text segmentation.' });
+        setSegments([]);
+        setRelationships([]);
+        setWizardStep(null);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      let parsedNodes = [];
+      let parsedEdges = [];
+
+      if (isMermaid) {
+        const result = parseMermaid(trimmedInput);
+        parsedNodes = result.nodes;
+        parsedEdges = result.edges;
+        if (parsedNodes.length === 0) {
+          throw new Error('Mermaid parser could not extract any nodes. Check flowchart/graph block declarations.');
+        }
+      } else if (isMarkdown) {
+        const result = parseMarkdown(trimmedInput);
+        parsedNodes = result.nodes;
+        parsedEdges = result.edges;
+        if (parsedNodes.length === 0) {
+          throw new Error('Markdown parser could not extract nested outline lists.');
+        }
+      }
+
+      // Lay out the parsed structure
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(parsedNodes, parsedEdges, layoutType);
+      setNodes(layoutedNodes);
+      setEdges(layoutedEdges);
+      setWizardStep(null); // Direct generation is not in wizard mode
+    } catch (err) {
+      console.error(err);
+      setError({ message: err.message || 'An unexpected error occurred during map generation.' });
+      setNodes([]);
+      setEdges([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGenerateMapFromWizard = () => {
+    setError(null);
+    setSelectedNodeId(null);
+
+    // Map segments to React Flow nodes
+    const mappedNodes = segments.map((seg) => ({
+      id: seg.id,
+      data: {
+        label: seg.title,
+        category: seg.category,
+        description: seg.content,
+      },
+      position: { x: 0, y: 0 },
+    }));
+
+    // Map relationships to React Flow edges
+    const mappedEdges = relationships.map((rel) => ({
+      id: rel.id || `e-${rel.sourceSegmentId}-${rel.targetSegmentId}`,
+      source: rel.sourceSegmentId,
+      target: rel.targetSegmentId,
+      label: rel.label,
+    }));
+
+    // Lay out and render
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(mappedNodes, mappedEdges, layoutType);
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+    setWizardStep('map');
+  };
+
+
+  const handleClear = () => {
+    setRawInput('');
+    setNodes([]);
+    setEdges([]);
+    setError(null);
+    setSelectedNodeId(null);
+    setWizardStep(null);
+    setSegments([]);
+    setRelationships([]);
+  };
+
+
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+
+  const renderProgress = () => {
+    if (wizardStep !== 'segments' && wizardStep !== 'relationships') return null;
+    return (
+      <div className="flex items-center justify-center gap-8 mb-6 pb-4 border-b border-white/5">
+        <div className={`flex items-center gap-2 transition-all duration-200 ${wizardStep === 'segments' ? 'text-violet-400 font-bold' : 'text-slate-500'}`}>
+          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold ${wizardStep === 'segments' ? 'bg-violet-600 text-white' : 'bg-white/10 text-slate-400'}`}>1</span>
+          <span>Clean & Segment</span>
+        </div>
+        <div className="w-12 h-[1px] bg-white/10"></div>
+        <div className={`flex items-center gap-2 transition-all duration-200 ${wizardStep === 'relationships' ? 'text-violet-400 font-bold' : 'text-slate-500'}`}>
+          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold ${wizardStep === 'relationships' ? 'bg-violet-600 text-white' : 'bg-white/10 text-slate-400'}`}>2</span>
+          <span>Review Relationships</span>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex w-screen h-screen bg-[#0b0b0e] text-slate-100 overflow-hidden">
+      {wizardStep !== 'segments' && wizardStep !== 'relationships' && (
+        <ControlPanel
+          rawInput={rawInput}
+          onInputChange={setRawInput}
+          layoutType={layoutType}
+          onLayoutChange={setLayoutType}
+          onGenerate={handleGenerate}
+          isLoading={isLoading}
+          error={error}
+          onClear={handleClear}
+          onError={setError}
+          wizardStep={wizardStep}
+          onEditStructure={() => setWizardStep('relationships')}
+        />
+      )}
+      <div className="flex-1 h-full p-6 relative flex flex-col">
+        {renderProgress()}
+        <div className="flex-1 min-h-0">
+          {wizardStep === 'segments' ? (
+            <SegmentEditor
+              segments={segments}
+              onSegmentsChange={handleSegmentsChange}
+              onNext={() => setWizardStep('relationships')}
+              onBack={() => setWizardStep(null)}
+            />
+          ) : wizardStep === 'relationships' ? (
+            <RelationshipEditor
+              segments={segments}
+              relationships={relationships}
+              onRelationshipsChange={setRelationships}
+              onNext={handleGenerateMapFromWizard}
+              onBack={() => setWizardStep('segments')}
+            />
+          ) : (
+            <ReactFlowProvider>
+              <Canvas
+                nodes={nodes}
+                edges={edges}
+                onNodeSelect={(nodeId) => {
+                  setSelectedNodeId(nodeId);
+                  setRightPanelTab('details');
+                }}
+                onPaneSelect={() => setSelectedNodeId(null)}
+                selectedNodeId={selectedNodeId}
+                highlightedElementIds={highlightedElementIds}
+              />
+            </ReactFlowProvider>
+          )}
+        </div>
+      </div>
+      {(nodes.length > 0 || segments.length > 0) && (
+        <HeuristicsBadge
+          violationsCount={heuristicViolations.length}
+          isOpen={isHeuristicsOpen && rightPanelTab === 'heuristics'}
+          onClick={() => {
+            setIsHeuristicsOpen(true);
+            setRightPanelTab('heuristics');
+          }}
+        />
+      )}
+      <DetailsPanel
+        selectedNode={selectedNode}
+        edges={edges}
+        nodes={nodes}
+        onClose={() => {
+          setSelectedNodeId(null);
+          setIsHeuristicsOpen(false);
+        }}
+        isHeuristicsOpen={isHeuristicsOpen}
+        activeTab={rightPanelTab}
+        onTabChange={setRightPanelTab}
+        violations={heuristicViolations}
+        onHighlightElement={handleHighlightElement}
+      />
+    </div>
+  );
+
+}
