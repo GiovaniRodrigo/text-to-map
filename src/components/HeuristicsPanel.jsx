@@ -1,3 +1,5 @@
+import { getRuleSeverity, sortViolations } from '../utils/heuristics';
+
 export default function HeuristicsPanel({ violations = [], onHighlightElement }) {
   if (violations.length === 0) {
     return (
@@ -12,10 +14,7 @@ export default function HeuristicsPanel({ violations = [], onHighlightElement })
   }
 
   // Sort: errors first, then warnings
-  const sortedViolations = [...violations].sort((a, b) => {
-    const severityScore = { error: 2, warning: 1, info: 0 };
-    return (severityScore[b.ruleId] || 0) - (severityScore[a.ruleId] || 0);
-  });
+  const sortedViolations = sortViolations(violations);
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
@@ -30,7 +29,7 @@ export default function HeuristicsPanel({ violations = [], onHighlightElement })
 
       <div className="space-y-2">
         {sortedViolations.map((violation) => {
-          const isError = violation.ruleId === 'rule-self-loop';
+          const isError = getRuleSeverity(violation.ruleId) === 'error';
           const icon = isError ? '❌' : '⚠️';
           const badgeClass = isError
             ? 'bg-red-500/10 text-red-400 border-red-500/20'

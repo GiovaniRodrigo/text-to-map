@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { validateMap } from '../../src/utils/heuristics';
+import { validateMap, getRuleSeverity, sortViolations } from '../../src/utils/heuristics';
+
 
 describe('Site-Wide Map Heuristics', () => {
   describe('Orphan Node Check', () => {
@@ -157,6 +158,34 @@ describe('Site-Wide Map Heuristics', () => {
       const cycleViolations = violations.filter(v => v.ruleId === 'rule-circular-cycle');
 
       expect(cycleViolations).toHaveLength(0);
+    });
+  });
+
+  describe('Rule Severity and Violation Sorting Helpers', () => {
+    it('should map rule IDs to correct severities', () => {
+      expect(getRuleSeverity('rule-self-loop')).toBe('error');
+      expect(getRuleSeverity('rule-circular-cycle')).toBe('warning');
+      expect(getRuleSeverity('rule-orphan-node')).toBe('warning');
+      expect(getRuleSeverity('rule-category-alignment')).toBe('warning');
+      expect(getRuleSeverity('unknown-rule')).toBe('info');
+    });
+
+    it('should sort violations with errors first, then warnings', () => {
+      const violations = [
+        { id: 'v1', ruleId: 'rule-orphan-node' }, // warning
+        { id: 'v2', ruleId: 'rule-self-loop' },    // error
+        { id: 'v3', ruleId: 'rule-category-alignment' }, // warning
+        { id: 'v4', ruleId: 'unknown-rule' }       // info (fallback)
+      ];
+
+      const sorted = sortViolations(violations);
+
+      expect(sorted).toHaveLength(4);
+      expect(sorted[0].id).toBe('v2'); // error should be first
+      // warning group (index 1 & 2)
+      expect(['rule-orphan-node', 'rule-category-alignment']).toContain(sorted[1].ruleId);
+      expect(['rule-orphan-node', 'rule-category-alignment']).toContain(sorted[2].ruleId);
+      expect(sorted[3].id).toBe('v4'); // info should be last
     });
   });
 });

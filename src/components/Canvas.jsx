@@ -13,6 +13,8 @@ const nodeTypes = {
   customNode: CustomNode,
 };
 
+const edgeTypes = {};
+
 export default function Canvas({
   nodes,
   edges,
@@ -22,6 +24,7 @@ export default function Canvas({
   highlightedElementIds,
 }) {
   const reactFlowInstance = useReactFlow();
+
 
   // Recalculate viewport and fit graph in viewport smoothly when nodes load/change
   useEffect(() => {
@@ -95,6 +98,7 @@ export default function Canvas({
         nodes={customNodes}
         edges={customEdges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodeClick={(_, node) => onNodeSelect(node.id)}
         onPaneClick={() => onPaneSelect()}
         fitView

@@ -147,3 +147,33 @@ export function validateMap(nodes = [], edges = []) {
 
   return violations;
 }
+
+/**
+ * Maps a heuristic rule ID to its predefined severity.
+ * @param {String} ruleId - The unique ID of the rule
+ * @returns {String} 'error' | 'warning' | 'info'
+ */
+export function getRuleSeverity(ruleId) {
+  const severities = {
+    'rule-self-loop': 'error',
+    'rule-circular-cycle': 'warning',
+    'rule-orphan-node': 'warning',
+    'rule-category-alignment': 'warning',
+  };
+  return severities[ruleId] || 'info';
+}
+
+/**
+ * Sorts a list of heuristic violations so errors come first, followed by warnings and info.
+ * @param {Array} violations - List of HeuristicViolation objects
+ * @returns {Array} Sorted list of violations
+ */
+export function sortViolations(violations = []) {
+  const severityScore = { error: 2, warning: 1, info: 0 };
+  return [...violations].sort((a, b) => {
+    const sevA = getRuleSeverity(a.ruleId);
+    const sevB = getRuleSeverity(b.ruleId);
+    return severityScore[sevB] - severityScore[sevA];
+  });
+}
+

@@ -1,8 +1,8 @@
-# Specification Quality Checklist: Ad Spaces
+# Specification Quality Checklist: LLM Connection Settings
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-06-04
-**Feature**: [spec.md](file:///home/giovani/Documents/projects/text-map/specs/005-ad-spaces/spec.md)
+**Feature**: [spec.md](../spec.md)
 
 ## Content Quality
 
@@ -31,7 +31,4 @@
 
 ## Notes
 
-- All requirements have been validated. Clarification questions were answered during the interview:
-  - Ad placements located in panels: bottom of `ControlPanel` and inside `DetailsPanel`.
-  - Ad source: Dynamic third-party script/iframe (like Google AdSense).
-  - Ad dismissal: Session-dismissible with an (X) button.
+- All items passed validation. The specification is complete, questions are resolved, and it is ready for the planning phase.
